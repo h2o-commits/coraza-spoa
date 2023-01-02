@@ -132,12 +132,12 @@ check_status "${url_echo}" 403 -X POST -H 'Content-Type: application/x-www-form-
 echo "[${step}/${total_steps}] (onResponseBody) Testing true negative"
 check_body "${url_echo}" false -X POST -H 'Content-Type: application/x-www-form-urlencoded' --data "${trueNegativeBodyPayloadForResponseBody}"
 
-# TODO - Testing response body detection
-#((step+=1))
-#echo "[${step}/${total_steps}] (onResponseBody) Testing true positive"
-#check_body "${url_echo}" true -X POST -H 'Content-Type: application/x-www-form-urlencoded' --data "${truePositiveBodyPayloadForResponseBody}"
+ TODO - Testing response body detection
+((step+=1))
+echo "[${step}/${total_steps}] (onResponseBody) Testing true positive"
+check_body "${url_echo}" true -X POST -H 'Content-Type: application/x-www-form-urlencoded' --data "${truePositiveBodyPayloadForResponseBody}"
 
-## Testing extra requests examples from the readme and some CRS rules in anomaly score mode.
+# Testing extra requests examples from the readme and some CRS rules in anomaly score mode.
 
 # Testing XSS detection during phase 1
 ((step+=1))

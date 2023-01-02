@@ -4,10 +4,14 @@ services:
     image: mccutchen/go-httpbin:v2.5.0
     ports:
       - 8080:8080
+  echoserver:
+    image: jmalloc/echo-server
+    environment:
+      - PORT=8081
+    ports:
+      - 8081:8081
   coraza:
-    build:
-      context: .
-      target: coreruleset
+    image: coraza/coraza-spoa:crs4-test
     volumes:
       - ./docker/e2e/e2e-rules.conf:/etc/coraza-spoa/rules/000-e2e-rules.conf
   haproxy:
@@ -19,6 +23,7 @@ services:
     links:
       - "coraza:coraza"
       - "httpbin:httpbin"
+      - "echoserver:echoserver"
     volumes:
       - type: bind
         source: ./docker/haproxy
@@ -33,3 +38,15 @@ services:
     build:
       context: docker/e2e
       dockerfile: ./Dockerfile.curl
+  wsstat:
+    depends_on:
+      - haproxy
+      - coraza
+    links:
+      - "haproxy:haproxy"
+      - "httpbin:httpbin"
+    build:
+      context: docker/wsstat
+    stdin_open: true
+    tty: true
+
