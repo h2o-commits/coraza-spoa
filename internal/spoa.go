@@ -20,11 +20,13 @@ import (
 	"os"
 	"strings"
 	"time"
+	"io"
 
 	"github.com/bluele/gcache"
 	"github.com/corazawaf/coraza-spoa/config"
 	"github.com/corazawaf/coraza/v3"
 	"github.com/corazawaf/coraza/v3/types"
+	"github.com/corazawaf/coraza/v3/loggers"
 	spoe "github.com/criteo/haproxy-spoe-go"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -40,6 +42,7 @@ const (
 // TODO - in coraza v3 ErrorLogCallback is currently in the internal package
 type ErrorLogCallback = func(rule types.MatchedRule)
 
+
 type application struct {
 	name   string
 	cfg    *config.Application
@@ -51,6 +54,38 @@ type application struct {
 // SPOA store the relevant data for starting SPOA.
 type SPOA struct {
 	applications map[string]*application
+}
+
+type debugLogger struct {
+	logger *zap.Logger
+}
+
+func (l *debugLogger) Info(message string, args ...interface{}) {
+	l.logger.Error(message)
+}
+
+func (l *debugLogger) Warn(message string, args ...interface{}) {
+	l.logger.Error(message)
+}
+
+func (l *debugLogger) Error(message string, args ...interface{}) {
+	l.logger.Error(message)
+}
+
+func (l *debugLogger) Debug(message string, args ...interface{}) {
+	l.logger.Error(message)
+}
+
+func (l *debugLogger) Trace(message string, args ...interface{}) {
+	l.logger.Error(message)
+}
+
+func (l *debugLogger) SetLevel(level loggers.LogLevel) {
+	l.logger.Info("Setting level", zap.String("newlevel", level.String()))
+}
+
+func (l *debugLogger) SetOutput(w io.WriteCloser) {
+	l.logger.Info("ignoring SecDebugLog directive, debug logs are always routed to proxy logs")
 }
 
 // Start starts the SPOA to detect the security risks.
@@ -203,7 +238,8 @@ func New(conf map[string]*config.Application) (*SPOA, error) {
 
 		conf := coraza.NewWAFConfig().
 		          WithDirectives(strings.Join(cfg.Rules, "\n")).
-							WithErrorLogger(logError(logger))
+							WithErrorLogger(logError(logger)).
+							WithDebugLogger(&debugLogger{logger: logger})
 
 		waf, err := coraza.NewWAF(conf)
 		if err != nil {
